@@ -1,13 +1,12 @@
 import os, warnings
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib import gridspec
-import matplotlib.pyplot as plt
-from tensorflow import keras
-from tensorflow.keras import layers
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
 from tensorflow.keras.preprocessing import image_dataset_from_directory
+import matplotlib.pyplot as plt
+from matplotlib import gridspec
 
 # Reproducability
 def set_seed(seed=31415):
@@ -22,7 +21,7 @@ plt.rc('figure', autolayout=True)
 plt.rc('axes', labelweight='bold', labelsize='large',
        titleweight='bold', titlesize=18, titlepad=10)
 plt.rc('image', cmap='magma')
-warnings.filterwarnings("ignore") # to clean up output cells
+warnings.filterwarnings("ignore")
 
 
 # Load training and validation sets
@@ -44,12 +43,9 @@ ds_valid_ = image_dataset_from_directory(
     batch_size=64,
     shuffle=False,
 )
-
-# Data Pipeline
 def convert_to_float(image, label):
     image = tf.image.convert_image_dtype(image, dtype=tf.float32)
     return image, label
-
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 ds_train = (
     ds_train_
@@ -64,24 +60,24 @@ ds_valid = (
     .prefetch(buffer_size=AUTOTUNE)
 )
 
+# Build Model 
 pretrained_base = tf.keras.models.load_model(
     'cv-course-models/vgg16-pretrained-base',
 )
 pretrained_base.trainable = False
-
 model = keras.Sequential([
     pretrained_base,
     layers.Flatten(),
     layers.Dense(6, activation='relu'),
     layers.Dense(1, activation='sigmoid'),
 ])
-
 model.compile(
     optimizer='adam',
     loss='binary_crossentropy',
     metrics=['binary_accuracy'],
 )
 
+# Fit model
 history = model.fit(
     ds_train,
     validation_data=ds_valid,
@@ -89,6 +85,7 @@ history = model.fit(
     verbose=1,
 )
 
+# Visualize history
 history_frame = pd.DataFrame(history.history)
 history_frame.loc[:, ['loss', 'val_loss']].plot()
 history_frame.loc[:, ['binary_accuracy', 'val_binary_accuracy']].plot();
