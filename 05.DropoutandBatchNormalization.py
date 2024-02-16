@@ -37,6 +37,7 @@ model = keras.Sequential([
     layers.Dense(1),
 ])
 
+
 model.compile(
     optimizer='adam',
     loss='mae',
